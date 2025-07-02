@@ -2,15 +2,13 @@ import React, { useState } from 'react';
 import { CreditCard, BarChart3, Settings, History } from 'lucide-react';
 import PaymentInterface from './components/PaymentInterface.jsx';
 import TransactionHistory from './components/TransactionHistory.jsx';
-import TestingDashboard from './components/TestingDashboard.jsx';
 
 function App() {
   const [activeTab, setActiveTab] = useState('payment');
 
   const tabs = [
     { id: 'payment', name: 'Payment', icon: CreditCard },
-    { id: 'history', name: 'History', icon: History },
-    { id: 'testing', name: 'Testing', icon: Settings }
+    { id: 'history', name: 'History', icon: History }
   ];
 
   const handleTestRun = (testData, scenario) => {
@@ -65,7 +63,6 @@ function App() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activeTab === 'payment' && <PaymentInterface />}
         {activeTab === 'history' && <TransactionHistory />}
-        {activeTab === 'testing' && <TestingDashboard onRunTest={handleTestRun} />}
       </main>
 
       {/* Features Grid */}

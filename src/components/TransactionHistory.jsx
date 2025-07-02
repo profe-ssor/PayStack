@@ -17,7 +17,10 @@ const TransactionHistory = () => {
     try {
       setLoading(true);
       const result = await paystackService.getTransactions();
-      setTransactions(result.data || []);
+      console.log('API result:', result);
+      const txns = Array.isArray(result.results) ? result.results : [];
+      console.log('Loaded transactions:', txns);
+      setTransactions(txns);
     } catch (error) {
       console.error('Error loading transactions:', error);
     } finally {
@@ -52,8 +55,13 @@ const TransactionHistory = () => {
   };
 
   const filteredTransactions = transactions.filter(txn => {
-    if (filter === 'all') return true;
-    return txn.status === filter;
+    const filterValue = (filter || '').toLowerCase().trim();
+    const statusValue = (txn.status || '').toLowerCase().trim();
+    console.log('Current filter:', filterValue, 'Transaction status:', statusValue);
+    if (!filterValue || filterValue === 'all') return true;
+    const allowedStatuses = ['pending', 'success', 'failed'];
+    if (!allowedStatuses.includes(filterValue)) return true;
+    return statusValue === filterValue;
   });
 
   const formatDate = (dateString) => {
@@ -89,7 +97,7 @@ const TransactionHistory = () => {
           <Filter size={16} className="text-gray-500" />
           <select
             value={filter}
-            onChange={(e) => setFilter(e.target.value)}
+            onChange={(e) => setFilter(e.target.value.toLowerCase().trim())}
             className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="all">All</option>

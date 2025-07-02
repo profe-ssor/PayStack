@@ -112,37 +112,34 @@ const PaymentInterface = () => {
         customer_country: formData.selectedCountry,
         mobile_money_provider: formData.mobileMoneyProvider,
         mobile_money_number: formData.paymentMethod === 'mobile_money' ? formData.customerInfo.phone : '',
+        bank_code: formData.paymentMethod === 'bank_transfer' || formData.paymentMethod === 'ussd' ? formData.selectedBank : '',
         metadata: {
           selected_bank: formData.selectedBank,
-          integration_type: 'react_multi_currency',
-          test_mode: true
+          integration_type: 'react_multi_currency'
         }
       };
 
-      // For demo purposes, simulate Paystack popup
-      const result = await paystackService.simulatePaystackPopup(
-        {
-          ...paymentData,
-          reference: paystackService.generateReference()
-        },
-        (response) => {
-          setPaymentStatus('success');
-          setPaymentResult({
-            reference: response.reference,
-            status: 'success',
-            amount: formData.amount,
-            currency: formData.selectedCurrency
-          });
-        },
-        () => {
-          setPaymentStatus('failed');
-          setPaymentResult({
-            status: 'failed',
-            message: 'Payment was cancelled or failed'
-          });
-        }
-      );
-
+      // Call real API to initialize payment
+      const result = await paystackService.initializePayment(paymentData);
+      if (result.status === 'success' && result.data && result.data.authorization_url) {
+        // Redirect to Paystack payment page for card payments
+        window.location.href = result.data.authorization_url;
+      } else if (result.status === 'success') {
+        // For other payment methods, show instructions or success
+        setPaymentStatus('success');
+        setPaymentResult({
+          reference: result.data.reference,
+          status: 'success',
+          amount: formData.amount,
+          currency: formData.selectedCurrency
+        });
+      } else {
+        setPaymentStatus('failed');
+        setPaymentResult({
+          status: 'failed',
+          message: result.message || 'Payment initialization failed.'
+        });
+      }
     } catch (error) {
       setPaymentStatus('failed');
       setPaymentResult({
