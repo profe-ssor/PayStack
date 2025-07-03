@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:production": "cp env.production .env && vite build",
+    "build:local": "cp env.example .env && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
