@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://paystack-integration-ldwp.onrender.com/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://paystack-integration-ldwp.onrender.com/api/payments';
 
 class PaystackService {
   constructor() {
@@ -10,7 +10,7 @@ class PaystackService {
       console.log('API_BASE_URL:', API_BASE_URL);
       console.log('Payment data:', paymentData);
       
-      const response = await fetch(`${API_BASE_URL}/payments/initialize/`, {
+      const response = await fetch(`${API_BASE_URL}/initialize/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -55,7 +55,7 @@ class PaystackService {
 
   async verifyPayment(reference) {
     try {
-      const response = await fetch(`${API_BASE_URL}/payments/verify/${reference}/`, {
+      const response = await fetch(`${API_BASE_URL}/verify/${reference}/`, {
         credentials: 'include',
         mode: 'cors'
       });
@@ -75,7 +75,7 @@ class PaystackService {
   async getTransactions(filters = {}) {
     try {
       const queryParams = new URLSearchParams(filters);
-      const response = await fetch(`${API_BASE_URL}/payments/transactions/?${queryParams}`, {
+      const response = await fetch(`${API_BASE_URL}/transactions/?${queryParams}`, {
         credentials: 'include',
         mode: 'cors'
       });
