@@ -1,10 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CreditCard, BarChart3, Settings, History } from 'lucide-react';
 import PaymentInterface from './components/PaymentInterface.jsx';
 import TransactionHistory from './components/TransactionHistory.jsx';
+import PaymentCallback from './components/PaymentCallback.jsx';
 
 function App() {
   const [activeTab, setActiveTab] = useState('payment');
+  const [showCallback, setShowCallback] = useState(false);
+
+  // Check if we're on a callback URL
+  useEffect(() => {
+    const isCallback = window.location.pathname === '/payment/callback' || 
+                      window.location.search.includes('reference=') ||
+                      window.location.search.includes('trxref=');
+    setShowCallback(isCallback);
+  }, []);
 
   const tabs = [
     { id: 'payment', name: 'Payment', icon: CreditCard },
@@ -14,6 +24,11 @@ function App() {
   const handleTestRun = (testData, scenario) => {
     console.log('Running test:', scenario.name, testData);
     // Switch to payment tab and pre-fill form
+    setActiveTab('payment');
+  };
+
+  const handleCallbackBack = () => {
+    setShowCallback(false);
     setActiveTab('payment');
   };
 
@@ -61,8 +76,14 @@ function App() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {activeTab === 'payment' && <PaymentInterface />}
-        {activeTab === 'history' && <TransactionHistory />}
+        {showCallback ? (
+          <PaymentCallback onBack={handleCallbackBack} />
+        ) : (
+          <>
+            {activeTab === 'payment' && <PaymentInterface />}
+            {activeTab === 'history' && <TransactionHistory />}
+          </>
+        )}
       </main>
 
       {/* Features Grid */}

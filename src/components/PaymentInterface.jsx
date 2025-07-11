@@ -126,20 +126,20 @@ const PaymentInterface = () => {
         window.location.href = result.data.authorization_url;
       } else if (result.status === 'success') {
         // For other payment methods, show instructions or success
-        setPaymentStatus('success');
-        setPaymentResult({
+          setPaymentStatus('success');
+          setPaymentResult({
           reference: result.data.reference,
-          status: 'success',
-          amount: formData.amount,
-          currency: formData.selectedCurrency
-        });
+            status: 'success',
+            amount: formData.amount,
+            currency: formData.selectedCurrency
+          });
       } else {
-        setPaymentStatus('failed');
-        setPaymentResult({
-          status: 'failed',
+          setPaymentStatus('failed');
+          setPaymentResult({
+            status: 'failed',
           message: result.message || 'Payment initialization failed.'
-        });
-      }
+          });
+        }
     } catch (error) {
       setPaymentStatus('failed');
       setPaymentResult({
