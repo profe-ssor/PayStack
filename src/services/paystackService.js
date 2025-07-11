@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://paystack-integration-ldwp.onrender.com/api/payments';
+const API_BASE_URL = 'https://paystack-integration-ldwp.onrender.com/api/payments';
 
 class PaystackService {
   constructor() {
