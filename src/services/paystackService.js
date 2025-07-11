@@ -12,6 +12,8 @@ class PaystackService {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
+        mode: 'cors',
         body: JSON.stringify({
           ...paymentData,
           reference: this.generateReference(),
@@ -37,7 +39,10 @@ class PaystackService {
 
   async verifyPayment(reference) {
     try {
-      const response = await fetch(`${API_BASE_URL}/payments/verify/${reference}/`);
+      const response = await fetch(`${API_BASE_URL}/payments/verify/${reference}/`, {
+        credentials: 'include',
+        mode: 'cors'
+      });
       const result = await response.json();
       
       if (!response.ok) {
@@ -54,7 +59,10 @@ class PaystackService {
   async getTransactions(filters = {}) {
     try {
       const queryParams = new URLSearchParams(filters);
-      const response = await fetch(`${API_BASE_URL}/payments/transactions/?${queryParams}`);
+      const response = await fetch(`${API_BASE_URL}/payments/transactions/?${queryParams}`, {
+        credentials: 'include',
+        mode: 'cors'
+      });
       const result = await response.json();
       
       if (!response.ok) {
