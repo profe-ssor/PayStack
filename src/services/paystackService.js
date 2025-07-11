@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://paystack-integration-ldwp.onrender.com/api';
 
 class PaystackService {
   constructor() {
@@ -7,6 +7,9 @@ class PaystackService {
 
   async initializePayment(paymentData) {
     try {
+      console.log('API_BASE_URL:', API_BASE_URL);
+      console.log('Payment data:', paymentData);
+      
       const response = await fetch(`${API_BASE_URL}/payments/initialize/`, {
         method: 'POST',
         headers: {
@@ -25,7 +28,20 @@ class PaystackService {
         })
       });
       
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
+      
+      // Check if response is JSON
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('Non-JSON response:', text);
+        throw new Error(`Expected JSON but got ${contentType}. Response: ${text.substring(0, 200)}`);
+      }
+      
       const result = await response.json();
+      console.log('Response result:', result);
+      
       if (!response.ok) {
         throw new Error(result.message || 'Payment initialization failed');
       }
