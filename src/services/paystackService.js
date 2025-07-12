@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:8000/api/payments';
+const API_BASE_URL = 'https://paystack-integration-ldwp.onrender.com/api/payments';
 
 class PaystackService {
   constructor() {
