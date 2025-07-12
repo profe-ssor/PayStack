@@ -13,6 +13,8 @@ const PaymentCallback = ({ onBack }) => {
         // Get reference from URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         const reference = urlParams.get('reference') || urlParams.get('trxref');
+        const successUrl = urlParams.get('success_url');
+        const failureUrl = urlParams.get('failure_url');
         
         if (!reference) {
           setStatus('failed');
@@ -27,14 +29,37 @@ const PaymentCallback = ({ onBack }) => {
           setStatus('success');
           setMessage('Payment successful! Your transaction has been completed.');
           setPaymentData(result.data);
+          
+          // Redirect to success URL after 3 seconds
+          if (successUrl) {
+            setTimeout(() => {
+              window.location.href = successUrl;
+            }, 3000);
+          }
         } else {
           setStatus('failed');
           setMessage('Payment verification failed. Please contact support.');
+          
+          // Redirect to failure URL after 3 seconds
+          if (failureUrl) {
+            setTimeout(() => {
+              window.location.href = failureUrl;
+            }, 3000);
+          }
         }
       } catch (error) {
         console.error('Payment verification error:', error);
         setStatus('failed');
         setMessage('Failed to verify payment. Please check your transaction status.');
+        
+        // Redirect to failure URL after 3 seconds
+        const urlParams = new URLSearchParams(window.location.search);
+        const failureUrl = urlParams.get('failure_url');
+        if (failureUrl) {
+          setTimeout(() => {
+            window.location.href = failureUrl;
+          }, 3000);
+        }
       }
     };
 

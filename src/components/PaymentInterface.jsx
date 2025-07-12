@@ -9,15 +9,15 @@ import USSDForm from './USSDForm';
 import paystackService from '../services/paystackService';
 import { validateEmail, validatePhone, validateAmount } from '../utils/validators';
 
-const PaymentInterface = () => {
+const PaymentInterface = ({ orderData }) => {
   const [formData, setFormData] = useState({
-    selectedCurrency: 'NGN',
+    selectedCurrency: orderData?.currency || 'NGN',
     selectedCountry: 'NG',
-    amount: '',
+    amount: orderData?.amount?.toString() || '',
     customerInfo: {
-      email: '',
+      email: orderData?.email || '',
       phone: '',
-      name: ''
+      name: orderData?.customer_name || ''
     },
     paymentMethod: 'card',
     mobileMoneyProvider: '',
@@ -28,6 +28,22 @@ const PaymentInterface = () => {
 
   const [paymentStatus, setPaymentStatus] = useState(null);
   const [paymentResult, setPaymentResult] = useState(null);
+
+  // Update form data when orderData changes
+  useEffect(() => {
+    if (orderData) {
+      setFormData(prev => ({
+        ...prev,
+        selectedCurrency: orderData.currency || 'NGN',
+        amount: orderData.amount?.toString() || '',
+        customerInfo: {
+          ...prev.customerInfo,
+          email: orderData.email || '',
+          name: orderData.customer_name || ''
+        }
+      }));
+    }
+  }, [orderData]);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -122,24 +138,36 @@ const PaymentInterface = () => {
       // Call real API to initialize payment
       const result = await paystackService.initializePayment(paymentData);
       if (result.status === 'success' && result.data && result.data.authorization_url) {
-        // Redirect to Paystack payment page for card payments
-        window.location.href = result.data.authorization_url;
-      } else if (result.status === 'success') {
-        // For other payment methods, show instructions or success
+        // Check if this is a test mode URL (contains localhost:5176)
+        if (result.data.authorization_url.includes('localhost:5176')) {
+          // This is test mode - simulate successful payment
           setPaymentStatus('success');
           setPaymentResult({
-          reference: result.data.reference,
+            reference: result.data.reference,
             status: 'success',
             amount: formData.amount,
             currency: formData.selectedCurrency
           });
-      } else {
-          setPaymentStatus('failed');
-          setPaymentResult({
-            status: 'failed',
-          message: result.message || 'Payment initialization failed.'
-          });
+        } else {
+          // Redirect to Paystack payment page for card payments
+          window.location.href = result.data.authorization_url;
         }
+      } else if (result.status === 'success') {
+        // For other payment methods, show instructions or success
+        setPaymentStatus('success');
+        setPaymentResult({
+          reference: result.data.reference,
+          status: 'success',
+          amount: formData.amount,
+          currency: formData.selectedCurrency
+        });
+      } else {
+        setPaymentStatus('failed');
+        setPaymentResult({
+          status: 'failed',
+          message: result.message || 'Payment initialization failed.'
+        });
+      }
     } catch (error) {
       setPaymentStatus('failed');
       setPaymentResult({
@@ -224,9 +252,34 @@ const PaymentInterface = () => {
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Paystack Multi-Currency Payment</h1>
-        <p className="text-gray-600">Accept payments in multiple currencies with mobile money support</p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Osko Buys Payment</h1>
+        <p className="text-gray-600">Complete your purchase securely</p>
       </div>
+
+      {/* Order Summary */}
+      {orderData && (
+        <div className="bg-gradient-to-r from-red-50 to-blue-50 rounded-lg border border-red-200 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+            Order Summary
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div>
+              <p className="text-gray-600">Order ID: <span className="font-semibold text-gray-900">{orderData.order_id}</span></p>
+              <p className="text-gray-600">Amount: <span className="font-semibold text-gray-900">{orderData.currency} {orderData.amount}</span></p>
+            </div>
+            <div>
+              <p className="text-gray-600">Customer: <span className="font-semibold text-gray-900">{orderData.customer_name}</span></p>
+              <p className="text-gray-600">Email: <span className="font-semibold text-gray-900">{orderData.email}</span></p>
+            </div>
+          </div>
+          {orderData.order_summary && (
+            <p className="text-gray-600 mt-2 text-sm">
+              <span className="font-semibold">Items:</span> {orderData.order_summary}
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Currency & Country Selection */}
       <CurrencySelector
@@ -252,7 +305,7 @@ const PaymentInterface = () => {
               className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:border-transparent ${
                 formData.errors.name ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
               }`}
-              placeholder="Enter your full name"
+              placeholder={orderData?.customer_name ? orderData.customer_name : "Enter your full name"}
             />
             {formData.errors.name && (
               <p className="text-red-600 text-sm mt-1">{formData.errors.name}</p>
@@ -270,7 +323,7 @@ const PaymentInterface = () => {
               className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:border-transparent ${
                 formData.errors.email ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
               }`}
-              placeholder="Enter your email address"
+              placeholder={orderData?.email ? orderData.email : "Enter your email address"}
             />
             {formData.errors.email && (
               <p className="text-red-600 text-sm mt-1">{formData.errors.email}</p>
@@ -361,7 +414,7 @@ const PaymentInterface = () => {
             w-full py-3 px-6 rounded-lg font-medium text-white transition-all duration-200
             ${formData.isProcessing
               ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-blue-600 hover:bg-blue-700 hover:shadow-lg'
+              : 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 hover:shadow-lg'
             }
           `}
         >
@@ -379,7 +432,7 @@ const PaymentInterface = () => {
         </button>
         
         <p className="text-center text-sm text-gray-500 mt-3">
-          Secure payment powered by Paystack
+          Secure payment powered by Osko Buys
         </p>
       </div>
     </div>

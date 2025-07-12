@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://paystack-integration-ldwp.onrender.com/api/payments';
+const API_BASE_URL = 'http://localhost:8000/api/payments';
 
 class PaystackService {
   constructor() {
@@ -10,6 +10,11 @@ class PaystackService {
       console.log('API_BASE_URL:', API_BASE_URL);
       console.log('Payment data:', paymentData);
       
+      // Use custom callback URLs if provided, otherwise use defaults
+      const callbackUrl = paymentData.success_url && paymentData.failure_url 
+        ? `${window.location.origin}/payment/callback?success_url=${encodeURIComponent(paymentData.success_url)}&failure_url=${encodeURIComponent(paymentData.failure_url)}`
+        : `${window.location.origin}/payment/callback`;
+      
       const response = await fetch(`${API_BASE_URL}/initialize/`, {
         method: 'POST',
         headers: {
@@ -20,10 +25,12 @@ class PaystackService {
         body: JSON.stringify({
           ...paymentData,
           reference: this.generateReference(),
-          callback_url: `${window.location.origin}/payment/callback`,
+          callback_url: callbackUrl,
           metadata: {
             ...paymentData.metadata,
-            integration: 'react_multi_currency'
+            integration: 'react_multi_currency',
+            success_url: paymentData.success_url,
+            failure_url: paymentData.failure_url
           }
         })
       });
