@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { CreditCard, BarChart3, Settings, History } from 'lucide-react';
+import { CreditCard, BarChart3, Settings, History, User, LogOut } from 'lucide-react';
 import PaymentInterface from './components/PaymentInterface.jsx';
 import TransactionHistory from './components/TransactionHistory.jsx';
 import PaymentCallback from './components/PaymentCallback.jsx';
+import AuthModal from './components/AuthModal.jsx';
+import authService from './services/authService';
 
 function App() {
   const [activeTab, setActiveTab] = useState('payment');
   const [showCallback, setShowCallback] = useState(false);
   const [orderData, setOrderData] = useState(null);
+  const [user, setUser] = useState(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   // Check if we're on a callback URL
   useEffect(() => {
@@ -15,6 +19,14 @@ function App() {
                       window.location.search.includes('reference=') ||
                       window.location.search.includes('trxref=');
     setShowCallback(isCallback);
+  }, []);
+
+  // Check authentication status on app load
+  useEffect(() => {
+    const currentUser = authService.getCurrentUser();
+    if (currentUser) {
+      setUser(currentUser);
+    }
   }, []);
 
   // Read order data from URL parameters
@@ -59,6 +71,21 @@ function App() {
     setActiveTab('payment');
   };
 
+  const handleAuthSuccess = (userData) => {
+    setUser(userData);
+    setShowAuthModal(false);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+      setUser(null);
+      setActiveTab('payment');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -96,10 +123,43 @@ function App() {
                   );
                 })}
               </div>
+              
+              {/* Authentication Section */}
+              <div className="flex items-center space-x-2">
+                {user ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="text-sm text-gray-600">
+                      Welcome, {user.first_name || user.username}
+                    </div>
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center space-x-1 px-3 py-2 text-sm text-gray-600 hover:text-red-600 transition-colors"
+                    >
+                      <LogOut size={16} />
+                      <span>Logout</span>
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowAuthModal(true)}
+                    className="flex items-center space-x-1 px-3 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 transition-colors"
+                  >
+                    <User size={16} />
+                    <span>Sign In</span>
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </header>
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onAuthSuccess={handleAuthSuccess}
+      />
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

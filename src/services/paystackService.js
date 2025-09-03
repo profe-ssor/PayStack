@@ -1,8 +1,14 @@
-const API_BASE_URL = 'https://paystack-integration-ldwp.onrender.com/api/payments';
+const API_BASE_URL = 'http://localhost:8000/api/payments';
 
 class PaystackService {
   constructor() {
     this.publicKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || 'pk_test_sample_key';
+  }
+
+  // Get authorization headers
+  getAuthHeaders() {
+    const token = localStorage.getItem('accessToken');
+    return token ? { 'Authorization': `Bearer ${token}` } : {};
   }
 
   async initializePayment(paymentData) {
@@ -19,6 +25,7 @@ class PaystackService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...this.getAuthHeaders()
         },
         credentials: 'include',
         mode: 'cors',
@@ -63,6 +70,9 @@ class PaystackService {
   async verifyPayment(reference) {
     try {
       const response = await fetch(`${API_BASE_URL}/verify/${reference}/`, {
+        headers: {
+          ...this.getAuthHeaders()
+        },
         credentials: 'include',
         mode: 'cors'
       });
@@ -83,6 +93,9 @@ class PaystackService {
     try {
       const queryParams = new URLSearchParams(filters);
       const response = await fetch(`${API_BASE_URL}/transactions/?${queryParams}`, {
+        headers: {
+          ...this.getAuthHeaders()
+        },
         credentials: 'include',
         mode: 'cors'
       });

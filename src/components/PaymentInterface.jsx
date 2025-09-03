@@ -118,6 +118,9 @@ const PaymentInterface = ({ orderData }) => {
     setPaymentStatus('processing');
 
     try {
+      // Store user email in localStorage for transaction history
+      localStorage.setItem('userEmail', formData.customerInfo.email);
+
       const paymentData = {
         email: formData.customerInfo.email,
         amount: parseFloat(formData.amount),

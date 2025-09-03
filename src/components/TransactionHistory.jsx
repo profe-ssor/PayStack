@@ -28,6 +28,8 @@ const TransactionHistory = () => {
     }
   };
 
+
+
   const getStatusIcon = (status) => {
     switch (status) {
       case 'success':
@@ -57,10 +59,12 @@ const TransactionHistory = () => {
   const filteredTransactions = transactions.filter(txn => {
     const filterValue = (filter || '').toLowerCase().trim();
     const statusValue = (txn.status || '').toLowerCase().trim();
-    console.log('Current filter:', filterValue, 'Transaction status:', statusValue);
+    
     if (!filterValue || filterValue === 'all') return true;
+    
     const allowedStatuses = ['pending', 'success', 'failed'];
     if (!allowedStatuses.includes(filterValue)) return true;
+    
     return statusValue === filterValue;
   });
 
@@ -92,12 +96,15 @@ const TransactionHistory = () => {
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-6">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-gray-900">Transaction History</h3>
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900">Transaction History</h3>
+          <p className="text-sm text-gray-500 mt-1">Your payment transactions</p>
+        </div>
         <div className="flex items-center space-x-2">
           <Filter size={16} className="text-gray-500" />
           <select
             value={filter}
-            onChange={(e) => setFilter(e.target.value.toLowerCase().trim())}
+            onChange={(e) => setFilter(e.target.value)}
             className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="all">All</option>
